@@ -2,41 +2,13 @@
 
 #include "handy.h"
 
-// console output functions {{{
-void
-error (const char *msg, bool use_errno) {
-    // print a red error
-    if ( use_errno ) {
-        char buf[512];
-        snprintf(buf, sizeof(buf), RED "--> error:" RESET " %s", msg);
-        perror(buf);
-    } else {
-        fprintf(stderr, RED "--> error:" RESET " %s.\n", msg);
-    }
-}
-
-void
-warn (const char *msg) {
-    // print a yellow warning
-    fprintf(stderr, YEL "--> warning:" RESET " %s!\n", msg);
-}
-
-void
-msg (const char *msg) {
-    // print a green message
-    printf(GRN "--> " RESET "%s.\n", msg);
-}
-// }}}
-
-// "safe" wrapper functions {{{
 void *
 smalloc (size_t nmemb, size_t size) {
-    // safe malloc
-    void *ptr = malloc(nmemb * size);
+
+    void *ptr = calloc(nmemb, size);
 
     if ( ptr == NULL ) {
-        error("malloc", true);
-        exit(EXIT_FAILURE);
+        error(1, errno, "malloc faled");
     }
     
     return ptr;
@@ -44,12 +16,11 @@ smalloc (size_t nmemb, size_t size) {
 
 void *
 srealloc (void *ptr, size_t nmemb, size_t size) {
-    // safe realloc
+
     void *new_ptr = realloc(ptr, nmemb * size);
 
     if ( ptr == NULL ) {
-        error("realloc", true);
-        exit(EXIT_FAILURE);
+        error(1, errno, "realloc failed");
     }
 
     return new_ptr;
@@ -61,12 +32,10 @@ sfopen (const char *pathname, const char *mode) {
     FILE *fp = fopen(pathname, mode);
 
     if ( fp == NULL ) {
-        error(pathname, true);
-        exit(EXIT_FAILURE);
+        error(1, errno, "failed to open %s", pathname);
     }
 
     return fp;
 }
-// }}}
 
-// vim: set ts=4 sw=4 fenc=utf-8 et:
+// vim: set ts=4 sw=4 et:
